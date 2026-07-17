@@ -118,83 +118,85 @@ export function FloatingNav() {
   return (
     <>
       <header className="pad-safe-top pad-safe-x pointer-events-none fixed inset-x-0 top-0 z-50">
-        <nav className="pointer-events-auto mx-auto flex max-w-6xl items-center justify-between gap-3 bg-ink px-4 py-1 sm:grid sm:grid-cols-3 sm:px-5 sm:py-2">
-          {/* Logo — left on mobile, centered from sm up */}
-          <a
-            href="#top"
-            onClick={(e) => go(e, "top")}
-            className="tap order-1 text-gray transition-colors hover:text-signal sm:order-2 sm:justify-self-center"
-            aria-label={`${site.band} — back to top`}
-          >
-            {/* Type by default — the crest is unreadable at this size.
-                Flip assets.logoInNav to swap it in. */}
-            {assets.logoInNav ? (
-              <>
-                <span className="sm:hidden">
-                  <Logo height={24} />
-                </span>
-                <span className="hidden sm:inline">
-                  <Logo height={28} />
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="font-display text-xl uppercase sm:hidden">
-                  {site.band}
-                </span>
-                <span className="hidden font-display text-2xl uppercase sm:inline">
-                  {site.band}
-                </span>
-              </>
-            )}
-          </a>
+        <div className="pointer-events-auto bg-ink">
+          <nav className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-1 sm:grid sm:grid-cols-3 sm:px-5 sm:py-2">
+            {/* Logo — left on mobile, centered from sm up */}
+            <a
+              href="#top"
+              onClick={(e) => go(e, "top")}
+              className="tap order-1 text-gray transition-colors hover:text-signal sm:order-2 sm:justify-self-center"
+              aria-label={`${site.band} — back to top`}
+            >
+              {/* Type by default — the crest is unreadable at this size.
+                  Flip assets.logoInNav to swap it in. */}
+              {assets.logoInNav ? (
+                <>
+                  <span className="sm:hidden">
+                    <Logo height={24} />
+                  </span>
+                  <span className="hidden sm:inline">
+                    <Logo height={28} />
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="font-display text-xl uppercase sm:hidden">
+                    {site.band}
+                  </span>
+                  <span className="hidden font-display text-2xl uppercase sm:inline">
+                    {site.band}
+                  </span>
+                </>
+              )}
+            </a>
 
-          {/* Inline links — sm and up only */}
-          <ul className="order-2 hidden items-center gap-6 sm:order-1 sm:flex">
-            {links.map((l) => (
-              <li key={l.id}>
-                <a
-                  href={`#${l.id}`}
-                  onClick={(e) => go(e, l.id)}
-                  aria-current={active === l.id ? "true" : undefined}
-                  className={`navlink tap ${active === l.id ? "!text-signal" : ""}`}
-                >
-                  {l.label}
-                </a>
-              </li>
-            ))}
-          </ul>
+            {/* Inline links — sm and up only */}
+            <ul className="order-2 hidden items-center gap-6 sm:order-1 sm:flex">
+              {links.map((l) => (
+                <li key={l.id}>
+                  <a
+                    href={`#${l.id}`}
+                    onClick={(e) => go(e, l.id)}
+                    aria-current={active === l.id ? "true" : undefined}
+                    className={`navlink tap ${active === l.id ? "!text-signal" : ""}`}
+                  >
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
 
-          {/* Channel wordmark — sm and up (mobile gets it in the menu) */}
-          <span
-            className="order-3 hidden justify-self-end font-sans text-xs uppercase text-signal sm:inline tracking-nav"
-          >
-            {site.channel}
-          </span>
-
-          {/* Hamburger — mobile only. Two bars that cross into an X. */}
-          <button
-            ref={menuButton}
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            aria-label={open ? "Close menu" : "Open menu"}
-            className="tap order-3 px-1 text-gray transition-colors hover:text-signal sm:hidden"
-          >
-            <span className="relative block h-4 w-6" aria-hidden>
-              <span
-                className={`absolute left-0 h-[2px] w-6 bg-current transition-all duration-300 ${
-                  open ? "top-[7px] rotate-45" : "top-[3px] rotate-0"
-                }`}
-              />
-              <span
-                className={`absolute left-0 h-[2px] w-6 bg-current transition-all duration-300 ${
-                  open ? "top-[7px] -rotate-45" : "top-[11px] rotate-0"
-                }`}
-              />
+            {/* Channel wordmark — sm and up (mobile gets it in the menu) */}
+            <span
+              className="order-3 hidden justify-self-end font-sans text-xs uppercase text-signal sm:inline tracking-nav"
+            >
+              {site.channel}
             </span>
-          </button>
-        </nav>
+
+            {/* Hamburger — mobile only. Two bars that cross into an X. */}
+            <button
+              ref={menuButton}
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label={open ? "Close menu" : "Open menu"}
+              className="tap order-3 px-1 text-gray transition-colors hover:text-signal sm:hidden"
+            >
+              <span className="relative block h-4 w-6" aria-hidden>
+                <span
+                  className={`absolute left-0 h-[2px] w-6 bg-current transition-all duration-300 ${
+                    open ? "top-[7px] rotate-45" : "top-[3px] rotate-0"
+                  }`}
+                />
+                <span
+                  className={`absolute left-0 h-[2px] w-6 bg-current transition-all duration-300 ${
+                    open ? "top-[7px] -rotate-45" : "top-[11px] rotate-0"
+                  }`}
+                />
+              </span>
+            </button>
+          </nav>
+        </div>
 
         {/* Pinned under the nav, always visible. */}
         <div className="pointer-events-auto">

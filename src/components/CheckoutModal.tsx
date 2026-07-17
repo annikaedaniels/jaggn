@@ -7,6 +7,7 @@ import {
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
 import { StaticLoader } from "@/components/StaticLoader";
+import { StaticField } from "@/components/StaticField";
 import { useToast } from "@/components/Toast";
 import { useScrollLock } from "@/lib/useScrollLock";
 
@@ -110,10 +111,11 @@ export function CheckoutModal({
       aria-modal="true"
       aria-label="Checkout"
     >
+      <StaticField className="!fixed" opacity={0.12} fps={14} tint={0.03} />
       {/* Edge-to-edge sheet on phones (every px counts in a payment form);
           a floating panel from sm up. */}
       <div
-        className="relative min-h-full w-full border-gray/25 bg-ink p-4 sm:my-8 sm:min-h-0 sm:max-w-xl sm:border sm:p-6"
+        className="relative z-10 min-h-full w-full border-gray/25 bg-ink p-4 sm:my-8 sm:min-h-0 sm:max-w-xl sm:border sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { EmailSignup } from "@/components/EmailSignup";
+import { StaticField } from "@/components/StaticField";
 import { useScrollLock } from "@/lib/useScrollLock";
 import { site } from "@/data/site";
 
@@ -98,8 +99,9 @@ export function ExitIntent() {
       aria-modal="true"
       aria-label="Newsletter"
     >
+      <StaticField opacity={0.12} fps={14} tint={0.03} />
       <div
-        className="relative w-full max-w-md border border-gray/25 bg-ink p-6 text-center sm:p-8"
+        className="relative z-10 w-full max-w-md border border-gray/25 bg-ink p-6 text-center sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button

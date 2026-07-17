@@ -59,13 +59,13 @@ export type Show = {
 
 export const shows: Show[] = [
   {
-    date: "07.17.26",
+    date: "07.17.26 | 8PM",
     iso: "2026-07-17",
     city: "ORLANDO",
     state: "FL",
-    venue: "TOUR LOCATION",
-    flyerUrl: "https://www.instagram.com/jaggntheband/",
-  },
+    venue: "MY SISTER'S HOUSE",
+    flyerUrl: "https://www.instagram.com/breakthebankbookings/p/DaV5H4Pi3qu/",
+  }
 ];
 
 // ── ASSETS ─────────────────────────────────────────────────────

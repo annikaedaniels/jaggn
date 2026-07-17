@@ -1,0 +1,354 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    /* JS handles centered smooth-scroll; keep native smooth as fallback */
+    scroll-behavior: smooth;
+    /* iOS bumps font sizes on rotate unless pinned */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-ink text-gray font-sans antialiased;
+    /* Wide tracking + long words can push past the viewport on 320–360px
+       phones; nothing on this page scrolls sideways by design. */
+    overflow-x: hidden;
+    /* Kill the grey flash box Android/iOS paint over tapped links */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    @apply bg-signal text-ink;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display uppercase;
+    letter-spacing: -0.01em;
+    line-height: 0.92;
+  }
+
+  /* Visible keyboard focus */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible {
+    @apply outline-none ring-2 ring-signal ring-offset-2 ring-offset-ink;
+  }
+}
+
+@layer components {
+  /* ── Mobile foundations ────────────────────────────────────── */
+
+  /* Full viewport height that survives mobile browser chrome.
+     100vh on iOS Safari measures the viewport WITHOUT the address bar, so a
+     100vh hero gets its bottom cropped until you scroll. dvh tracks the real
+     visible area; vh stays as the fallback for older browsers. */
+  .h-screen-safe {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Inset from the notch / Dynamic Island / punch-hole and home indicator. */
+  .pad-safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .pad-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pad-safe-x {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Apple HIG / Material both want ~44px minimum touch targets. Small caps
+     links are nowhere near that, so pad the hit area without moving the text. */
+  .tap {
+    @apply relative inline-flex items-center;
+    min-height: 44px;
+  }
+
+  /* Corner pins that respect the notch / home indicator, so components don't
+     hand-roll env() math in inline styles. */
+  .pin-bl-safe {
+    position: absolute;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    left: calc(1.25rem + env(safe-area-inset-left, 0px));
+  }
+  .pin-br-safe {
+    position: absolute;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    right: calc(1.25rem + env(safe-area-inset-right, 0px));
+  }
+  .pin-bl-safe-fixed {
+    position: fixed;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    left: calc(1rem + env(safe-area-inset-left, 0px));
+  }
+
+  /* Top-right dialog stack, clear of the notch and rounded corners. */
+  .toast-viewport {
+    position: fixed;
+    top: calc(4.5rem + env(safe-area-inset-top, 0px));
+    right: calc(1rem + env(safe-area-inset-right, 0px));
+    width: min(22rem, calc(100vw - 2rem - env(safe-area-inset-right, 0px)));
+  }
+
+  /* Keeps a label legible on top of live static. */
+  .on-static {
+    text-shadow: 0 0 8px theme("colors.ink");
+  }
+
+  /* Hero logo box — reserves fluid height so art can't shift the layout. */
+  .hero-logo {
+    height: clamp(3rem, 11vw, 8rem);
+  }
+
+  .eyebrow {
+    @apply font-sans text-[11px] uppercase text-grayDim;
+    letter-spacing: 0.2rem;
+  }
+
+  /* Nav / link treatment — Inter, wide tracking, gray → orange on hover */
+  .navlink {
+    @apply font-sans text-xs uppercase text-gray transition-colors duration-150 hover:text-signal;
+    letter-spacing: 0.2rem;
+  }
+
+  /* Buttons — gray outline, fill orange on hover */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 border border-gray/40
+      bg-transparent px-6 py-3 font-sans text-xs uppercase text-gray
+      transition-colors duration-150 hover:border-signal hover:bg-signal hover:text-ink;
+    letter-spacing: 0.2rem;
+    min-height: 44px; /* touch target */
+  }
+  .btn-solid {
+    @apply border-signal bg-signal text-ink hover:bg-signal/85 hover:border-signal/85;
+  }
+}
+
+/* ── TV STATIC + SCANLINES (the signature effect) ─────────────── */
+.tv-static {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+
+/* animated grain */
+.tv-static::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.07;
+  animation: flicker 0.25s steps(3) infinite;
+  mix-blend-mode: screen;
+  will-change: opacity;
+}
+
+/* mix-blend-mode on a fixed, full-screen layer makes the compositor re-blend
+   everything beneath it every frame — one of the surest ways to jank scrolling
+   on a phone. Over a near-black page at 7% opacity the blend buys almost
+   nothing visually, so phones get plain compositing instead. */
+@media (max-width: 640px) {
+  .tv-static::before {
+    mix-blend-mode: normal;
+    opacity: 0.05;
+  }
+}
+
+/* fixed scanline texture */
+.tv-static::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.16) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+}
+
+/* a single scanline sweeping down the screen */
+.scan-sweep {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  height: 120px;
+  z-index: 41;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 90, 0, 0) 0%,
+    rgba(255, 90, 0, 0.06) 50%,
+    rgba(255, 90, 0, 0) 100%
+  );
+  animation: scan 7s linear infinite;
+}
+
+/* subtle CRT vignette */
+.crt-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 50% 50%,
+    transparent 55%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+/* Chromatic split — the misregistered RGB fringe used by the boot title.
+   Toggled by class rather than inline style so it's tunable in one place. */
+.rgb-split {
+  text-shadow:
+    2px 0 rgba(255, 90, 0, 0.8),
+    -2px 0 rgba(0, 200, 255, 0.4);
+}
+
+/* RGB glitch on hover (EP cover) */
+.glitch:hover {
+  animation: none;
+  filter: contrast(1.1);
+  text-shadow:
+    1.5px 0 rgba(255, 90, 0, 0.7),
+    -1.5px 0 rgba(0, 200, 255, 0.5);
+}
+
+/* ── Kit form overrides (if you use the official embed instead) ── */
+.formkit-form {
+  font-family: var(--font-sans) !important;
+  background: transparent !important;
+  border: none !important;
+}
+.formkit-input {
+  background: transparent !important;
+  border: 1px solid rgba(194, 197, 193, 0.4) !important;
+  color: #c2c5c1 !important;
+  border-radius: 0 !important;
+}
+.formkit-submit {
+  background: #ff5a00 !important;
+  border-radius: 0 !important;
+  letter-spacing: 0.2rem !important;
+}
+
+/* ── Nav scrim ────────────────────────────────────────────────── */
+/* The nav floats with no bar of its own, so page content — the ticker
+   especially — scrolls straight underneath and collides with the links.
+   This scrim is solid ink behind the links, then fades out, so it's invisible
+   against the page at rest but always hides whatever passes beneath.
+   The header is pointer-events-none so the fade never eats clicks. */
+.nav-scrim {
+  background: linear-gradient(
+    to bottom,
+    #0d0d0d 0%,
+    #0d0d0d 72%,
+    rgba(13, 13, 13, 0.75) 88%,
+    rgba(13, 13, 13, 0) 100%
+  );
+  padding-bottom: 1.5rem;
+}
+
+/* ── Logo ─────────────────────────────────────────────────────── */
+/* Paints the logo's alpha channel with currentColor, so a pure-white asset
+   inherits the palette (grey → orange on hover) with no re-export.
+   The -webkit- prefixes are NOT optional: iOS Safari still needs them, and
+   without them the logo silently disappears on iPhone. */
+.logo-mask {
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask-image: var(--logo-src);
+  mask-image: var(--logo-src);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+/* ── Mobile menu overlay ──────────────────────────────────────── */
+/* Scanlines so the menu reads as part of the broadcast, not a plain sheet.
+   The page-wide .tv-static sits at z-40, below the menu at z-45, so the
+   overlay carries its own texture. */
+.menu-scan {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.28) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+}
+
+/* ── Toast dialogs ────────────────────────────────────────────── */
+/* faint scanline texture so dialogs read as part of the broadcast */
+.toast-scan {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.22) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+}
+
+/* countdown to auto-fade */
+@keyframes toast-shrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+.toast-progress {
+  transform-origin: left;
+  animation-name: toast-shrink;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+/* pending: a signal sweeping back and forth, like a tuner */
+@keyframes toast-slide {
+  0% {
+    left: -35%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+.toast-slider {
+  animation: toast-slide 1.1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .tv-static::before,
+  .scan-sweep,
+  .animate-ticker {
+    animation: none !important;
+  }
+  /* keep the countdown (it conveys timing) but stop the looping sweep */
+  .toast-slider {
+    animation: none !important;
+    left: 0 !important;
+    width: 100% !important;
+    opacity: 0.5;
+  }
+}

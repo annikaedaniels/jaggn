@@ -60,17 +60,38 @@ export function BootSequence() {
     setActive(true);
   }, []);
 
+  // ── Scroll lock ──────────────────────────────────────────────
+  // Keyed on `done`, NOT on mount. The component doesn't unmount when the boot
+  // ends — it just renders null — so a lock tied to mount would never release
+  // and the page would be frozen forever. Every exit path (timeline end, click,
+  // keypress) flips `done`, which runs this cleanup.
   useEffect(() => {
-    if (!active) return;
+    if (!active || done) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [active, done]);
 
-    // Bail BEFORE touching body styles. Locking scroll and then returning
-    // without a cleanup would leave the page permanently unscrollable.
+  // ── Once finished: mark the session, fade out, unmount ────────
+  useEffect(() => {
+    if (!done) return;
+    try {
+      sessionStorage.setItem(SESSION_KEY, "1");
+    } catch {
+      /* private mode */
+    }
+    const t = setTimeout(() => setHidden(true), FADE_MS);
+    return () => clearTimeout(t);
+  }, [done]);
+
+  // ── The animation ────────────────────────────────────────────
+  useEffect(() => {
+    if (!active || done) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    // Hold the page still while the channel tunes in.
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
 
     const stopResize = observeCanvasSize(canvas);
     const paint = createNoisePainter(canvas);
@@ -83,16 +104,9 @@ export function BootSequence() {
     let lastFlashEnd = 0;
     let flashColor: (typeof FLASHES)[number] | null = null;
 
-    const finish = () => {
-      cancelAnimationFrame(raf);
-      try {
-        sessionStorage.setItem(SESSION_KEY, "1");
-      } catch {
-        /* ignore */
-      }
-      setDone(true);
-      window.setTimeout(() => setHidden(true), FADE_MS);
-    };
+    // Single exit point. Flipping `done` releases the scroll lock, stops this
+    // loop, and starts the fade — all via the effects above.
+    const finish = () => setDone(true);
 
     const loop = (now: number) => {
       const t = now - start;
@@ -143,9 +157,8 @@ export function BootSequence() {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", skip);
       stopResize();
-      document.body.style.overflow = prevOverflow;
     };
-  }, [active]);
+  }, [active, done]);
 
   if (!active || hidden) return null;
 
@@ -160,7 +173,7 @@ export function BootSequence() {
     <div
       className="fixed inset-0 z-[100] cursor-pointer bg-ink transition-opacity duration-300"
       style={{ opacity: done ? 0 : 1 }}
-      onClick={() => setDone(true) /* click anywhere to skip */}
+      onClick={() => setDone(true) /* same exit path as the timeline */}
       aria-hidden
     >
       <canvas ref={canvasRef} className="h-full w-full" />
@@ -184,15 +197,11 @@ export function BootSequence() {
       </div>
 
       {/* Corner bug + skip hint */}
-      <div
-        className="pin-bl-safe tracking-nav pointer-events-none flex items-center gap-2 font-sans text-[10px] uppercase text-grayDim"
-      >
+      <div className="pin-bl-safe tracking-nav pointer-events-none flex items-center gap-2 font-sans text-[10px] uppercase text-grayDim">
         <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-signal" />
         CH 7700
       </div>
-      <span
-        className="pin-br-safe tracking-nav pointer-events-none font-sans text-[10px] uppercase text-grayDim"
-      >
+      <span className="pin-br-safe tracking-nav pointer-events-none font-sans text-[10px] uppercase text-grayDim">
         {/* Phones have no keyboard to press — tapping already skips. */}
         {isTouch ? "Tap to skip" : "Press any key to skip"}
       </span>

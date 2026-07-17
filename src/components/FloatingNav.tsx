@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { site } from "@/data/site";
+import { site, assets } from "@/data/site";
 import { scrollToCenter } from "@/lib/scroll";
 import { useScrollLock } from "@/lib/useScrollLock";
 import { StaticField } from "@/components/StaticField";
 import { Logo } from "@/components/Logo";
+import { Ticker } from "@/components/Ticker";
 
 const links = [
   { label: "Music", id: "music" },
@@ -116,8 +117,8 @@ export function FloatingNav() {
 
   return (
     <>
-      <header className="nav-scrim pad-safe-top pad-safe-x pointer-events-none fixed inset-x-0 top-0 z-50">
-        <nav className="pointer-events-auto mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-1 sm:grid sm:grid-cols-3 sm:px-5 sm:py-2">
+      <header className="pad-safe-top pad-safe-x pointer-events-none fixed inset-x-0 top-0 z-50">
+        <nav className="pointer-events-auto mx-auto flex max-w-6xl items-center justify-between gap-3 bg-ink px-4 py-1 sm:grid sm:grid-cols-3 sm:px-5 sm:py-2">
           {/* Logo — left on mobile, centered from sm up */}
           <a
             href="#top"
@@ -125,14 +126,27 @@ export function FloatingNav() {
             className="tap order-1 text-gray transition-colors hover:text-signal sm:order-2 sm:justify-self-center"
             aria-label={`${site.band} — back to top`}
           >
-            {/* Logo image when supplied, Syne wordmark until then. Two sizes
-                so it never crowds the hamburger on a narrow phone. */}
-            <span className="font-display text-xl uppercase sm:hidden">
-              <Logo height={18} />
-            </span>
-            <span className="hidden font-display text-2xl uppercase sm:inline">
-              <Logo height={22} />
-            </span>
+            {/* Type by default — the crest is unreadable at this size.
+                Flip assets.logoInNav to swap it in. */}
+            {assets.logoInNav ? (
+              <>
+                <span className="sm:hidden">
+                  <Logo height={24} />
+                </span>
+                <span className="hidden sm:inline">
+                  <Logo height={28} />
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-display text-xl uppercase sm:hidden">
+                  {site.band}
+                </span>
+                <span className="hidden font-display text-2xl uppercase sm:inline">
+                  {site.band}
+                </span>
+              </>
+            )}
           </a>
 
           {/* Inline links — sm and up only */}
@@ -181,6 +195,14 @@ export function FloatingNav() {
             </span>
           </button>
         </nav>
+
+        {/* Pinned under the nav, always visible. */}
+        <div className="pointer-events-auto">
+          <Ticker />
+        </div>
+
+        {/* Soft edge so the bar doesn't cut the page with a hard line. */}
+        <div className="h-5 bg-gradient-to-b from-ink to-transparent" />
       </header>
 
       {/* ── Full-screen mobile menu ─────────────────────────────── */}

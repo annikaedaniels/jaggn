@@ -34,8 +34,10 @@ export const shirt = {
   // Display price only — the amount actually charged is controlled by the
   // Stripe Price ID. Update this string to match your Stripe price.
   displayPrice: "$35",
-  image: "/shirt/channel-7700-shirt.jpg", // replace with your product photo
-  blurb: "Heavyweight tee. Free shipping — it's already in the price.",
+  images: [
+      { src: "/shirt/front.webp", label: "Front" },
+      { src: "/shirt/back.webp", label: "Back" },
+    ],  blurb: "Heavyweight tee. Free shipping — it's already in the price.",
   stripe: {
     productId: "prod_UYR6Xo4bCIlh4b",
     priceId: "price_1TZKE7RgZ2vSyquERX2byw8G",
@@ -77,7 +79,10 @@ export const assets = {
    * reserves space so the page doesn't jump while the logo loads.
    * Example: { src: "/logo/jaggn.svg", aspect: 4.2 }
    */
-  logo: null as null | { src: string; aspect: number },
+  logo: { src: "/logo/jaggn.png", aspect: 0.848 } as null | {
+    src: string;
+    aspect: number;
+  },
 
   /**
    * Recolor the logo to the site's grey (and orange on hover) instead of
@@ -85,6 +90,7 @@ export const assets = {
    * anything else in the palette. Only works for a solid/transparent logo.
    */
   logoRecolor: true,
+  logoInNav: false,
 } as const;
 
 // Kit (ConvertKit) form uid from your embed snippet:

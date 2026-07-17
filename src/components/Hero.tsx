@@ -18,7 +18,7 @@ export function Hero() {
   return (
     <section
       id="music"
-      className="h-screen-safe relative flex items-center px-5 pb-16 pt-24 sm:pb-20"
+      className="h-screen-safe relative flex items-center px-5 pb-16 pt-32 sm:pb-20"
     >
       <div className="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-[1fr_0.8fr] md:gap-12">
         <motion.div {...rise}>
@@ -33,9 +33,9 @@ export function Hero() {
               <span className="sr-only">{site.band}</span>
               <span
                 aria-hidden
-                className="hero-logo block w-full max-w-[min(90vw,40rem)]"
+                className="hero-logo block"
               >
-                <Logo height={128} className="!h-full !w-auto" />
+                <Logo height={240} className="!h-full" />
               </span>
             </h1>
           ) : (

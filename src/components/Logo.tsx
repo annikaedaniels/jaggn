@@ -47,9 +47,8 @@ export function Logo({
         aria-label={site.band}
         className={`logo-mask ${className}`}
         style={{
-          // Width/height are set explicitly so the layout never shifts.
-          width: `${width}px`,
           height: `${height}px`,
+          aspectRatio: String(logo.aspect),
           ["--logo-src" as string]: `url(${logo.src})`,
         }}
       />

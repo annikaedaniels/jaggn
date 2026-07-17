@@ -6,7 +6,7 @@ export function Ticker() {
   const run = phrase.repeat(4);
 
   return (
-    <div className="overflow-hidden border-y border-gray/15 bg-ink/60 py-2">
+    <div className="overflow-hidden border-y border-gray/15 bg-ink py-2">
       <div className="flex w-max animate-ticker whitespace-nowrap font-sans text-[11px] uppercase text-grayDim tracking-nav">
         <span>{run}</span>
         <span aria-hidden>{run}</span>

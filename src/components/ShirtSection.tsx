@@ -12,6 +12,7 @@ const LOW_STOCK_AT = 10;
 export function ShirtSection() {
   const [open, setOpen] = useState(false);
   const [left, setLeft] = useState<number | null>(null);
+  const [view, setView] = useState(0); // 0 = front, 1 = back
 
   // Stock is optional (see lib/stock.ts) — if it's off, this stays null and
   // the section behaves exactly as it always has.
@@ -40,25 +41,55 @@ export function ShirtSection() {
         <p className="eyebrow mb-8 text-center sm:mb-10">Shirts</p>
 
         <div className="mx-auto grid max-w-4xl items-center gap-10 md:grid-cols-2">
-          {/* Product image */}
-          <div className="relative border border-gray/25 p-2">
-            <div className="relative aspect-square overflow-hidden bg-ink">
-              <Image
-                src={shirt.image}
-                alt={shirt.name}
-                fill
-                sizes="(max-width: 768px) 90vw, 420px"
-                className={`object-cover ${soldOut ? "opacity-40 grayscale" : ""}`}
-              />
+          {/* ── Product views ───────────────────────────────── */}
+          <div>
+            <div className="relative border border-gray/25 p-2">
+              <div className="relative aspect-square overflow-hidden bg-ink">
+                {/* Both views are mounted and cross-faded rather than swapped:
+                    the second image is then already decoded, so switching is
+                    instant instead of flashing an empty box on a phone. */}
+                {shirt.images.map((img, i) => (
+                  <Image
+                    key={img.src}
+                    src={img.src}
+                    alt={`${shirt.name} — ${img.label}`}
+                    fill
+                    sizes="(max-width: 768px) 90vw, 420px"
+                    priority={i === 0}
+                    className={`object-contain transition-opacity duration-300 ${
+                      soldOut ? "opacity-40 grayscale" : ""
+                    } ${i === view ? "opacity-100" : "pointer-events-none opacity-0"}`}
+                  />
+                ))}
+              </div>
+
+              {soldOut && (
+                <span className="tracking-nav absolute left-4 top-4 border border-signal bg-ink/90 px-3 py-1 font-sans text-[10px] uppercase text-signal">
+                  Sold out
+                </span>
+              )}
             </div>
-            {soldOut && (
-              <span className="tracking-nav absolute left-4 top-4 border border-signal bg-ink/90 px-3 py-1 font-sans text-[10px] uppercase text-signal">
-                Sold out
-              </span>
-            )}
+
+            {/* Front / Back switch */}
+            <div className="mt-3 flex justify-center gap-2" role="group" aria-label="Product views">
+              {shirt.images.map((img, i) => (
+                <button
+                  key={img.label}
+                  onClick={() => setView(i)}
+                  aria-pressed={i === view}
+                  className={`tap tracking-nav border px-4 font-sans text-[10px] uppercase transition-colors ${
+                    i === view
+                      ? "border-signal text-signal"
+                      : "border-gray/25 text-grayDim hover:border-signal hover:text-signal"
+                  }`}
+                >
+                  {img.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Details + buy */}
+          {/* ── Details + buy ───────────────────────────────── */}
           <div className="text-center md:text-left">
             <h2 className="text-4xl text-gray sm:text-5xl">{shirt.name}</h2>
 
@@ -100,8 +131,6 @@ export function ShirtSection() {
       {open && !soldOut && (
         <CheckoutModal
           onClose={() => setOpen(false)}
-          // Losing the last shirt to someone else mid-click is rare but real;
-          // flip the UI rather than leave a dead button.
           onSoldOut={() => {
             setLeft(0);
             setOpen(false);

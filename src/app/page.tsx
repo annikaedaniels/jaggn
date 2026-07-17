@@ -1,6 +1,5 @@
 import { FloatingNav } from "@/components/FloatingNav";
 import { Hero } from "@/components/Hero";
-import { Ticker } from "@/components/Ticker";
 import { ShirtSection } from "@/components/ShirtSection";
 import { LiveSection } from "@/components/LiveSection";
 import { Footer } from "@/components/Footer";
@@ -19,7 +18,6 @@ export default function Page() {
       <FloatingNav />
 
       <Hero />
-      <Ticker />
       <ShirtSection />
       <LiveSection />
       <Footer />

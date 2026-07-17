@@ -108,7 +108,7 @@
 
   /* Hero logo box — reserves fluid height so art can't shift the layout. */
   .hero-logo {
-    height: clamp(3rem, 11vw, 8rem);
+    height: clamp(11rem, 30vw, 15rem);
   }
 
   .eyebrow {

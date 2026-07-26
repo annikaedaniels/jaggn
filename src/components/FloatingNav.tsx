@@ -30,7 +30,14 @@ const links = [
 export function FloatingNav() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string>("music");
+  const [isAdmin, setIsAdmin] = useState(false);
   const reduce = useReducedMotion();
+
+  // The Admin tab only appears on a browser that has unlocked /admin before
+  // (see src/app/admin/page.tsx) — everyone else never sees it in the DOM.
+  useEffect(() => {
+    setIsAdmin(localStorage.getItem("jaggn:admin") === "1");
+  }, []);
 
   const pending = useRef<string | null>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
@@ -164,6 +171,13 @@ export function FloatingNav() {
                   </a>
                 </li>
               ))}
+              {isAdmin && (
+                <li>
+                  <a href="/admin" className="navlink tap">
+                    Admin
+                  </a>
+                </li>
+              )}
             </ul>
 
             {/* Channel wordmark — sm and up (mobile gets it in the menu) */}
@@ -240,6 +254,16 @@ export function FloatingNav() {
                     </a>
                   </li>
                 ))}
+                {isAdmin && (
+                  <li>
+                    <a
+                      href="/admin"
+                      className="block px-6 py-3 font-display text-5xl uppercase text-gray transition-colors"
+                    >
+                      Admin
+                    </a>
+                  </li>
+                )}
               </ul>
             </nav>
 

@@ -32,7 +32,7 @@ export const config = {
     token: process.env.UPSTASH_REDIS_REST_TOKEN,
   },
 
-  // Shirt run size — enables stock limiting when set.
+  // Shirt run size PER SIZE (S/M/L/XL/XXL each get this many) — enables stock limiting when set.
   shirtStock: process.env.SHIRT_STOCK,
 
   // Password for /admin (tour editor). Server-only.

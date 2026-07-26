@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { Show } from "@/data/site";
+import { useCallback, useState } from "react";
+import { products, type Show } from "@/data/site";
 
 // ─────────────────────────────────────────────────────────────
 //  /admin — password-gated tour editor.
@@ -31,6 +31,11 @@ export default function AdminPage() {
   const [editingIso, setEditingIso] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Live counts, per product then per size (null = stock storage isn't configured).
+  const [stock, setStock] = useState<Record<string, Record<string, number>> | null>(null);
+  const [stockStatus, setStockStatus] = useState("");
+  const [stockBusy, setStockBusy] = useState(false);
 
   const load = useCallback(
     async (pw: string) => {
@@ -62,9 +67,67 @@ export default function AdminPage() {
     [],
   );
 
+  const loadStock = useCallback(async (pw: string) => {
+    try {
+      const res = await fetch("/api/admin/stock", {
+        headers: { Authorization: `Bearer ${pw}` },
+      });
+      if (!res.ok) return; // stock storage may just not be configured — that's fine
+      const data = await res.json();
+      setStock(data.stock ?? null);
+    } catch {
+      /* stock panel is a bonus — never let it block the tour editor */
+    }
+  }, []);
+
   async function unlock(e: React.FormEvent) {
     e.preventDefault();
-    if (await load(password)) setAuthed(true);
+    if (await load(password)) {
+      setAuthed(true);
+      // Not the password itself — just a marker so this browser shows the
+      // nav's Admin tab on future visits instead of only this one.
+      localStorage.setItem("jaggn:admin", "1");
+      loadStock(password);
+    }
+  }
+
+  // A hard refresh (Ctrl+Shift+R) doesn't clear this: it only busts the HTTP
+  // cache, not localStorage. The nav tab marker is meant to survive reloads
+  // (that's the point — no more re-navigating to /admin by hand), so the only
+  // way off is this explicit action.
+  function logout() {
+    localStorage.removeItem("jaggn:admin");
+    setAuthed(false);
+    setPassword("");
+    setShows([]);
+    setStock(null);
+  }
+
+  async function saveStock() {
+    if (!stock) return;
+    setStockBusy(true);
+    setStockStatus("");
+    try {
+      const res = await fetch("/api/admin/stock", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${password}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ stock }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setStockStatus(data.error ?? "Save failed.");
+        return;
+      }
+      setStock(data.stock ?? stock);
+      setStockStatus("Saved.");
+    } catch {
+      setStockStatus("Network error.");
+    } finally {
+      setStockBusy(false);
+    }
   }
 
   // Persist the full list after any add / edit / delete.
@@ -165,7 +228,73 @@ export default function AdminPage() {
   // ── Editor ──
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-5 py-16">
-      <h1 className="font-display text-5xl uppercase text-gray">Tour</h1>
+      <div className="flex items-start justify-between">
+        <h1 className="font-display text-5xl uppercase text-gray">Admin</h1>
+        <button onClick={logout} className="navlink tap mt-2">
+          Log out
+        </button>
+      </div>
+
+      {/* ── Merch stock ── */}
+      <h2 className="mt-10 mb-3 font-display text-2xl uppercase text-gray">
+        Merch stock
+      </h2>
+      {stock === null ? (
+        <p className="mb-10 font-sans text-sm text-grayDim">
+          Stock storage isn&apos;t configured (Upstash env vars unset) — merch
+          sells without a limit.
+        </p>
+      ) : (
+        <div className="mb-10">
+          {products.map((product) => (
+            <div key={product.id} className="mb-6">
+              <p className="mb-2 font-sans text-sm text-gray">{product.name}</p>
+              <div
+                className="grid gap-2"
+                style={{ gridTemplateColumns: `repeat(${product.sizes.length}, minmax(0, 1fr))` }}
+              >
+                {product.sizes.map((size) => (
+                  <label key={size} className="flex flex-col gap-1 text-center">
+                    <span className="eyebrow">{size}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={stock[product.id]?.[size] ?? 0}
+                      onChange={(e) =>
+                        setStock({
+                          ...stock,
+                          [product.id]: {
+                            ...stock[product.id],
+                            [size]: Number(e.target.value),
+                          },
+                        })
+                      }
+                      className={`${field} text-center`}
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={saveStock}
+              disabled={stockBusy}
+              className="btn btn-solid disabled:opacity-50"
+            >
+              {stockBusy ? "…" : "Save stock"}
+            </button>
+            {stockStatus && (
+              <span className="font-sans text-xs uppercase text-grayDim tracking-label">
+                {stockStatus}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Tour dates ── */}
+      <h2 className="mb-1 font-display text-2xl uppercase text-gray">Tour</h2>
       <p className="eyebrow mb-10">
         {editingIso ? "Editing show" : "Add a show"}
       </p>

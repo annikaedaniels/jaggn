@@ -3,7 +3,7 @@ import { config, stockEnabled } from "@/lib/config";
 export { stockEnabled };
 
 // ─────────────────────────────────────────────────────────────
-//  Shirt stock.
+//  Merch stock.
 //
 //  Stripe does NOT track stock. Its "limited inventory" guidance is about
 //  expiring sessions so carts don't hold items — the counter is yours to own.
@@ -25,15 +25,20 @@ export { stockEnabled };
 //  Uses Upstash's REST API over plain fetch — no SDK, and it works identically
 //  on Netlify, Vercel and Cloudflare. Free tier is far more than a band needs.
 //
-//  OPTIONAL: with no env vars set, stock is simply DISABLED and the shirt sells
-//  without limit, exactly as before. Nothing breaks.
+//  OPTIONAL: with no env vars set, stock is simply DISABLED and everything
+//  sells without limit, exactly as before. Nothing breaks.
+//
+//  MULTIPLE PRODUCTS: there can be more than one shirt (see data/site.ts'
+//  `products` list). Every counter is keyed by BOTH product and size, so a
+//  sellout of one product/size never touches any other.
 // ─────────────────────────────────────────────────────────────
 
 const URL = config.redis.url;
 const TOKEN = config.redis.token;
-const INITIAL = config.shirtStock;
+const INITIAL = config.shirtStock; // initial count for EACH product × size
 
-const STOCK_KEY = "jaggn:stock:shirt";
+const stockKey = (productId: string, size: string) =>
+  `jaggn:stock:${productId}:${size}`;
 const seenKey = (sessionId: string) => `jaggn:session:${sessionId}`;
 // Reservations self-clean after 24h in case a webhook is ever missed.
 const SESSION_TTL = 60 * 60 * 24;
@@ -53,33 +58,37 @@ async function cmd<T = unknown>(...args: (string | number)[]): Promise<T> {
   return data.result;
 }
 
-/** Seed the counter once, from SHIRT_STOCK. SETNX won't clobber a live count. */
-export async function initStock() {
+/** Seed one product/size counter, from SHIRT_STOCK. SETNX won't clobber a live count. */
+export async function initStock(productId: string, size: string) {
   if (!stockEnabled) return;
-  await cmd("SETNX", STOCK_KEY, INITIAL!);
+  await cmd("SETNX", stockKey(productId, size), INITIAL!);
 }
 
-/** How many are left. null = limiting disabled. */
-export async function remaining(): Promise<number | null> {
+/** How many of this product/size are left. null = limiting disabled. */
+export async function remaining(productId: string, size: string): Promise<number | null> {
   if (!stockEnabled) return null;
-  await initStock();
-  const v = await cmd<string | null>("GET", STOCK_KEY);
+  await initStock(productId, size);
+  const v = await cmd<string | null>("GET", stockKey(productId, size));
   const n = Number(v ?? 0);
   return Number.isFinite(n) ? Math.max(0, n) : 0;
 }
 
 /**
- * Try to claim one unit for this session.
+ * Try to claim one unit of this product/size for this session.
  * Atomic: DECR returns the post-decrement value, so only one caller can take
- * the last shirt. If we went negative we hand it straight back.
+ * the last one. If we went negative we hand it straight back.
  */
-export async function reserve(sessionId: string): Promise<boolean> {
+export async function reserve(
+  sessionId: string,
+  productId: string,
+  size: string,
+): Promise<boolean> {
   if (!stockEnabled) return true;
-  await initStock();
+  await initStock(productId, size);
 
-  const left = await cmd<number>("DECR", STOCK_KEY);
+  const left = await cmd<number>("DECR", stockKey(productId, size));
   if (left < 0) {
-    await cmd("INCR", STOCK_KEY); // put it back — we oversold by one, undo
+    await cmd("INCR", stockKey(productId, size)); // put it back — oversold by one, undo
     return false;
   }
 
@@ -91,25 +100,46 @@ export async function reserve(sessionId: string): Promise<boolean> {
  * Payment went through. Stock was already decremented at reserve time, so this
  * only flips the marker. Idempotent: Stripe can deliver the same event twice.
  */
-export async function commit(sessionId: string): Promise<void> {
+export async function commit(
+  sessionId: string,
+  productId: string,
+  size: string,
+): Promise<void> {
   if (!stockEnabled) return;
   const prev = await cmd<string | null>("GETSET", seenKey(sessionId), "sold");
   await cmd("EXPIRE", seenKey(sessionId), SESSION_TTL);
 
   // Edge case: expired fired first (stock given back), then payment landed.
   // Take the unit back off the shelf.
-  if (prev === "released") await cmd("DECR", STOCK_KEY);
+  if (prev === "released") await cmd("DECR", stockKey(productId, size));
 }
 
 /**
- * Session expired unpaid — put the shirt back.
+ * Session expired unpaid — put the item back.
  * GETSET is atomic, so a duplicate `expired` event can't refund stock twice:
  * only the caller that observed "reserved" performs the INCR.
  */
-export async function release(sessionId: string): Promise<void> {
+export async function release(
+  sessionId: string,
+  productId: string,
+  size: string,
+): Promise<void> {
   if (!stockEnabled) return;
   const prev = await cmd<string | null>("GETSET", seenKey(sessionId), "released");
   await cmd("EXPIRE", seenKey(sessionId), SESSION_TTL);
 
-  if (prev === "reserved") await cmd("INCR", STOCK_KEY);
+  if (prev === "reserved") await cmd("INCR", stockKey(productId, size));
+}
+
+/**
+ * Directly overwrite one product/size's live count. Admin-only (guarded at
+ * the route) — for correcting the count after an in-person sale, a restock,
+ * etc. Unlike initStock this clobbers on purpose, so it only ever runs from
+ * the admin panel, never from the buy flow.
+ */
+export async function setStock(productId: string, size: string, value: number): Promise<void> {
+  if (!stockEnabled) {
+    throw new Error("Stock storage is not configured (Upstash env vars unset).");
+  }
+  await cmd("SET", stockKey(productId, size), value);
 }

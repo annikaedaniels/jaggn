@@ -18,11 +18,15 @@ const pk = config.stripe.publishableKey;
 const stripePromise = pk ? loadStripe(pk) : null;
 
 export function CheckoutModal({
+  productId,
+  size,
   onClose,
   onSoldOut,
 }: {
+  productId: string;
+  size: string;
   onClose: () => void;
-  /** Fired when the last shirt went to someone else while this modal opened. */
+  /** Fired when the last unit of this product/size went to someone else while this modal opened. */
   onSoldOut?: () => void;
 }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -51,7 +55,11 @@ export function CheckoutModal({
 
     (async () => {
       try {
-        const res = await fetch("/api/checkout", { method: "POST" });
+        const res = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId, size }),
+        });
         const data = await res.json();
         if (data?.soldOut) {
           // Someone took the last one between the page loading and this click.

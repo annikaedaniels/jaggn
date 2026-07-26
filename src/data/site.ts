@@ -25,29 +25,54 @@ export const socials = {
   email: "mailto:hello@jaggn.com", // ← replace with the band's contact email
 } as const;
 
-// ── SHIRT ──────────────────────────────────────────────────────
-// One product. Shipping is baked into the price; a free shipping rate
-// is applied at checkout so the buyer sees shipping as $0.
+// ── MERCH ──────────────────────────────────────────────────────
+// Multiple shirts (or other items) can be listed here — each is its own
+// Stripe Price/Product, its own size run, and its own stock counters (see
+// lib/stock.ts, keyed by `${product.id}:${size}`). Shipping is baked into
+// each price; a free shipping rate is applied at checkout so the buyer sees
+// shipping as $0.
 // The Stripe IDs below are NOT secret and are safe to keep in code.
-export const shirt = {
-  name: "CHANNEL 7700 SHIRT",
+export type Product = {
+  id: string; // stable slug — used as the stock/Stripe key, never shown to buyers
+  name: string;
   // Display price only — the amount actually charged is controlled by the
   // Stripe Price ID. Update this string to match your Stripe price.
-  displayPrice: "$40",
-  // Front and back. Cut out on transparency, so the tee floats on the page —
-  // no white studio box. WebP because these are photographs with alpha:
-  // 87 KB vs 1.7 MB as PNG for identical pixels.
-  images: [
-    { src: "/shirt/front.webp", label: "Front" },
-    { src: "/shirt/back.webp", label: "Back" },
-  ],
-  blurb: "Heavyweight tee. Free shipping — it's already in the price.",
+  displayPrice: string;
+  images: { src: string; label: string }[];
+  blurb: string;
+  // Stock is tracked per size (see lib/stock.ts) — SHIRT_STOCK in .env.local
+  // is the initial count for EACH size of EACH product, not a shared total.
+  sizes: readonly string[];
   stripe: {
-    productId: "prod_UYR6Xo4bCIlh4b",
-    priceId: "price_1TZKE7RgZ2vSyquERX2byw8G",
-    shippingRateId: "shr_1TZKRwRgZ2vSyquEHateY9jT",
+    productId: string;
+    priceId: string;
+    shippingRateId: string;
+  };
+};
+
+export const products = [
+  {
+    id: "channel-7700-shirt",
+    name: "CHANNEL 7700 SHIRT",
+    displayPrice: "$40",
+    // Front and back. Cut out on transparency, so the tee floats on the page —
+    // no white studio box. WebP because these are photographs with alpha:
+    // 87 KB vs 1.7 MB as PNG for identical pixels.
+    images: [
+      { src: "/shirt/front.webp", label: "Front" },
+      { src: "/shirt/back.webp", label: "Back" },
+    ],
+    blurb: "Heavyweight tee. Free shipping — it's already in the price.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    stripe: {
+      productId: "prod_UYR6Xo4bCIlh4b",
+      priceId: "price_1TZKE7RgZ2vSyquERX2byw8G",
+      shippingRateId: "shr_1TZKRwRgZ2vSyquEHateY9jT",
+    },
   },
-} as const;
+] as const satisfies Product[];
+
+export type ProductId = (typeof products)[number]["id"];
 
 // ── LIVE ───────────────────────────────────────────────────────
 // If this list is empty (after filtering past dates), the LIVE section

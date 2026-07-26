@@ -90,15 +90,17 @@ export async function POST(request: Request) {
       case "checkout.session.completed":
       case "checkout.session.async_payment_succeeded": {
         const session = event.data.object as Stripe.Checkout.Session;
-        // Sale is final — the shirt stays off the shelf.
-        await commit(session.id);
+        // Sale is final — the item stays off the shelf.
+        const { productId, size } = session.metadata ?? {};
+        if (productId && size) await commit(session.id, productId, size);
         await fulfillOrder(stripe, session.id);
         break;
       }
       case "checkout.session.expired": {
-        // Buyer walked away (or lost the race). Put the shirt back on sale.
+        // Buyer walked away (or lost the race). Put the item back on sale.
         const session = event.data.object as Stripe.Checkout.Session;
-        await release(session.id);
+        const { productId, size } = session.metadata ?? {};
+        if (productId && size) await release(session.id, productId, size);
         break;
       }
       default:

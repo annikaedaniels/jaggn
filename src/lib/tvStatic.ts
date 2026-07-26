@@ -30,6 +30,8 @@ export type PaintOpts = {
   flash?: readonly [number, number, number] | null;
   /** draw the orange/grey/black vertical test bars */
   bars?: boolean;
+  /** 0..1 — fraction of pixels re-randomized per paint; rest keep last frame's value (1 = classic full flicker) */
+  churn?: number;
 };
 
 export function createNoisePainter(
@@ -54,6 +56,7 @@ export function createNoisePainter(
       roll = -1,
       flash = null,
       bars = false,
+      churn = 1,
     } = opts;
 
     const w = canvas.width;
@@ -86,8 +89,13 @@ export function createNoisePainter(
       ctx.fillRect(0, 0, w, h);
     }
 
-    // Noise pass into the small buffer.
+    // Noise pass into the small buffer. With churn < 1, only that fraction of
+    // pixels gets a new random value each frame — the rest keep last frame's
+    // pixel. Same flicker rate (FPS), far less of the frame changes at once,
+    // so it reads as a slow crawl instead of a full strobe.
     for (let i = 0; i < data.length; i += 4) {
+      data[i + 3] = 255;
+      if (churn < 1 && Math.random() >= churn) continue;
       if (tint > 0 && Math.random() < tint) {
         const c = ACCENTS[(Math.random() * ACCENTS.length) | 0];
         data[i] = c[0];
@@ -99,7 +107,6 @@ export function createNoisePainter(
         data[i + 1] = v;
         data[i + 2] = v;
       }
-      data[i + 3] = 255;
     }
     bctx.putImageData(img, 0, 0);
 

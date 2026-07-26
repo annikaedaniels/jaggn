@@ -33,11 +33,15 @@ export const shirt = {
   name: "CHANNEL 7700 SHIRT",
   // Display price only — the amount actually charged is controlled by the
   // Stripe Price ID. Update this string to match your Stripe price.
-  displayPrice: "$35",
+  displayPrice: "$40",
+  // Front and back. Cut out on transparency, so the tee floats on the page —
+  // no white studio box. WebP because these are photographs with alpha:
+  // 87 KB vs 1.7 MB as PNG for identical pixels.
   images: [
-      { src: "/shirt/front.webp", label: "Front" },
-      { src: "/shirt/back.webp", label: "Back" },
-    ],  blurb: "Heavyweight tee. Free shipping — it's already in the price.",
+    { src: "/shirt/front.webp", label: "Front" },
+    { src: "/shirt/back.webp", label: "Back" },
+  ],
+  blurb: "Heavyweight tee. Free shipping — it's already in the price.",
   stripe: {
     productId: "prod_UYR6Xo4bCIlh4b",
     priceId: "price_1TZKE7RgZ2vSyquERX2byw8G",
@@ -50,7 +54,8 @@ export const shirt = {
 // shows "EP IN DEVELOPMENT".
 export type Show = {
   date: string;     // "MM.DD.YY" as displayed
-  iso: string;      // ISO for sorting / past-date filtering
+  iso: string;      // ISO date (YYYY-MM-DD) for sorting / past-date filtering
+  time: string;     // free text, e.g. "8:00 PM" (doors/show time)
   city: string;
   state: string;
   venue: string;
@@ -59,13 +64,15 @@ export type Show = {
 
 export const shows: Show[] = [
   {
-    date: "07.17.26 | 8PM",
+    date: "07.17.26",
     iso: "2026-07-17",
+    time: "8:00 PM",
     city: "ORLANDO",
     state: "FL",
     venue: "MY SISTER'S HOUSE",
-    flyerUrl: "https://www.instagram.com/breakthebankbookings/p/DaV5H4Pi3qu/",
-  }
+    // ← replace with the actual Instagram flyer post URL
+    flyerUrl: "https://www.instagram.com/jaggntheband/",
+  },
 ];
 
 // ── ASSETS ─────────────────────────────────────────────────────
@@ -90,6 +97,15 @@ export const assets = {
    * anything else in the palette. Only works for a solid/transparent logo.
    */
   logoRecolor: true,
+
+  /**
+   * Use the crest in the nav instead of the Syne "JAGGN" wordmark.
+   *
+   * Left OFF deliberately. The crest is a portrait emblem (0.85 aspect) of
+   * fine line work — at the nav's 18px height it renders ~15px wide and turns
+   * to mush. It needs ~72px before it reads at all. The nav keeps type, which
+   * is legible at any size; the crest gets the hero, where it has room.
+   */
   logoInNav: false,
 } as const;
 

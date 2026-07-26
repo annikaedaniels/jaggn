@@ -140,10 +140,10 @@ export function FloatingNav() {
                 </>
               ) : (
                 <>
-                  <span className="font-display text-xl uppercase sm:hidden">
+                  <span className="font-display text-2xl uppercase sm:hidden">
                     {site.band}
                   </span>
-                  <span className="hidden font-display text-2xl uppercase sm:inline">
+                  <span className="hidden font-display text-[28.8px] uppercase sm:inline">
                     {site.band}
                   </span>
                 </>
@@ -168,7 +168,7 @@ export function FloatingNav() {
 
             {/* Channel wordmark — sm and up (mobile gets it in the menu) */}
             <span
-              className="order-3 hidden justify-self-end font-sans text-xs uppercase text-signal sm:inline tracking-nav"
+              className="order-3 hidden justify-self-end font-sans text-[14.4px] uppercase text-signal sm:inline tracking-nav"
             >
               {site.channel}
             </span>
@@ -245,7 +245,7 @@ export function FloatingNav() {
 
             {/* The wordmark the header can't fit on a phone */}
             <span
-              className="relative z-10 mt-10 font-sans text-[11px] uppercase text-signal tracking-nav"
+              className="relative z-10 mt-10 font-sans text-[13.2px] uppercase text-signal tracking-nav"
             >
               {site.channel}
             </span>

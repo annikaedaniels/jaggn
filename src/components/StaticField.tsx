@@ -21,11 +21,14 @@ export function StaticField({
   fps = 14,
   /** 0..1 chance of a palette-colored (orange/grey/black) speck */
   tint = 0.03,
+  /** 0..1 — fraction of pixels re-randomized per frame; lower reads calmer without dropping fps */
+  churn = 1,
   className = "",
 }: {
   opacity?: number;
   fps?: number;
   tint?: number;
+  churn?: number;
   className?: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -40,6 +43,7 @@ export function StaticField({
     // Reduced motion: one still frame of grain, no animation.
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
+      // Full churn: this is the only frame that'll ever paint.
       paint({ intensity: 1, tint, roll: -1 });
       return stopResize;
     }
@@ -52,7 +56,7 @@ export function StaticField({
     const loop = (now: number) => {
       if (!paused && now - last >= interval) {
         last = now;
-        paint({ intensity: 1, tint, roll: -1 });
+        paint({ intensity: 1, tint, roll: -1, churn });
       }
       raf = requestAnimationFrame(loop);
     };
@@ -68,7 +72,7 @@ export function StaticField({
       document.removeEventListener("visibilitychange", onVisibility);
       stopResize();
     };
-  }, [fps, tint]);
+  }, [fps, tint, churn]);
 
   return (
     <canvas

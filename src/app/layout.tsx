@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Syne, Inter } from "next/font/google";
 import { site } from "@/data/site";
 import { ToastProvider } from "@/components/Toast";
+import { BackgroundStatic } from "@/components/BackgroundStatic";
 import "./globals.css";
 
 const display = Syne({
@@ -46,6 +47,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body className="min-h-screen">
+        {/* Faint live snow behind everything (sits at -z-10) */}
+        <BackgroundStatic opacity={0.05} />
         <ToastProvider>{children}</ToastProvider>
         {/* Broadcast overlays sit above content but never block clicks */}
         <div className="crt-vignette" aria-hidden />

@@ -22,7 +22,7 @@ export function Hero() {
     >
       <div className="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-[1fr_0.8fr] md:gap-12">
         <motion.div {...rise}>
-          <p className="eyebrow mb-5">{site.channel} · EP</p>
+          <p className="eyebrow mb-5 text-[13.2px]">{site.channel} · EP</p>
 
           {/* The hero wordmark. With a logo configured it renders the art at a
               fluid height; until then it's the Syne type with the RGB glitch.
@@ -44,21 +44,21 @@ export function Hero() {
             </h1>
           )}
 
-          <p className="mt-4 max-w-md font-sans text-sm uppercase text-grayDim tracking-label">
+          <p className="mt-4 max-w-md font-sans text-[16.8px] uppercase text-grayDim tracking-label">
             {site.ep.title} — out now
           </p>
 
           {/* LISTEN NOW → DSP links */}
           <div className="mt-9">
-            <p className="eyebrow mb-3 text-signal">Listen now</p>
+            <p className="eyebrow mb-3 text-[13.2px] text-signal">Listen now</p>
             <div className="flex flex-wrap gap-3">
-              <a href={site.ep.spotify} target="_blank" rel="noreferrer" className="btn">
+              <a href={site.ep.spotify} target="_blank" rel="noreferrer" className="btn text-[14.4px]">
                 Spotify
               </a>
-              <a href={site.ep.appleMusic} target="_blank" rel="noreferrer" className="btn">
+              <a href={site.ep.appleMusic} target="_blank" rel="noreferrer" className="btn text-[14.4px]">
                 Apple Music
               </a>
-              <a href={site.ep.youtubeMusic} target="_blank" rel="noreferrer" className="btn">
+              <a href={site.ep.youtubeMusic} target="_blank" rel="noreferrer" className="btn text-[14.4px]">
                 YouTube Music
               </a>
             </div>
@@ -67,7 +67,7 @@ export function Hero() {
 
         {/* EP cover framed like a TV set */}
         <motion.div
-          className="relative mx-auto w-full max-w-[16rem] sm:max-w-sm"
+          className="relative mx-auto w-full max-w-[19.2rem] sm:max-w-[28.8rem]"
           initial={reduce ? undefined : { opacity: 0, scale: 0.96 }}
           animate={reduce ? undefined : { opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -83,7 +83,7 @@ export function Hero() {
                 className="object-cover"
               />
             </div>
-            <div className="flex items-center justify-between px-1 pt-2 font-sans text-[10px] uppercase text-grayDim tracking-nav">
+            <div className="flex items-center justify-between px-1 pt-2 font-sans text-[12px] uppercase text-grayDim tracking-nav">
               <span>{site.band}</span>
               <span className="text-signal">CH 7700</span>
             </div>

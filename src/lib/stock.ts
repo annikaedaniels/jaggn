@@ -1,3 +1,7 @@
+import { config, stockEnabled } from "@/lib/config";
+
+export { stockEnabled };
+
 // ─────────────────────────────────────────────────────────────
 //  Shirt stock.
 //
@@ -25,12 +29,9 @@
 //  without limit, exactly as before. Nothing breaks.
 // ─────────────────────────────────────────────────────────────
 
-const URL = process.env.UPSTASH_REDIS_REST_URL;
-const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
-const INITIAL = process.env.SHIRT_STOCK;
-
-/** Stock limiting is only on when all three env vars are present. */
-export const stockEnabled = Boolean(URL && TOKEN && INITIAL);
+const URL = config.redis.url;
+const TOKEN = config.redis.token;
+const INITIAL = config.shirtStock;
 
 const STOCK_KEY = "jaggn:stock:shirt";
 const seenKey = (sessionId: string) => `jaggn:session:${sessionId}`;

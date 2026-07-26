@@ -22,8 +22,10 @@ import { commit, release } from "@/lib/stock";
 // The Stripe SDK is Node-only — it won't run on the Edge runtime.
 export const runtime = "nodejs";
 
-const secretKey = process.env.STRIPE_SECRET_KEY;
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+import { config } from "@/lib/config";
+
+const secretKey = config.stripe.secretKey;
+const webhookSecret = config.stripe.webhookSecret;
 
 /**
  * Do the actual work of an order. Must be safe to call MORE THAN ONCE for the

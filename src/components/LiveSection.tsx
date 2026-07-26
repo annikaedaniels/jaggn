@@ -1,20 +1,43 @@
-import { shows } from "@/data/site";
+"use client";
+
+import { useEffect, useState } from "react";
+import { shows as fallbackShows, type Show } from "@/data/site";
 
 const DASH = "——————";
 
 export function LiveSection() {
+  // Start from the build-time shows (from site.ts) so there's no empty flash,
+  // then swap to whatever the admin has stored the moment /api/tour responds.
   const today = new Date().toISOString().slice(0, 10);
-  const upcoming = [...shows]
+  const seed = [...fallbackShows]
     .filter((s) => s.iso >= today)
     .sort((a, b) => a.iso.localeCompare(b.iso));
 
+  const [upcoming, setUpcoming] = useState<Show[]>(seed);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/tour");
+        const data = await res.json();
+        if (!cancelled && Array.isArray(data.shows)) setUpcoming(data.shows);
+      } catch {
+        /* keep the build-time list on any failure */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <section id="live" className="px-5 py-20 sm:py-28">
-      <div className="mx-auto max-w-4xl text-center">
-        <p className="eyebrow mb-12">Live</p>
+      <div className="mx-auto max-w-[67.2rem] text-center">
+        <p className="eyebrow mb-12 text-[13.2px]">Live</p>
 
         {upcoming.length === 0 ? (
-          <p className="font-display text-3xl uppercase text-grayDim sm:text-6xl">
+          <p className="font-display text-4xl uppercase text-grayDim sm:text-7xl">
             EP in development
           </p>
         ) : (
@@ -25,9 +48,17 @@ export function LiveSection() {
                   href={s.flyerUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="group inline-flex min-h-[44px] flex-col items-center justify-center gap-1 px-2 py-2 font-sans text-sm uppercase text-gray transition-colors hover:text-signal sm:flex-row sm:gap-4 sm:text-base tracking-label"
+                  className="group inline-flex min-h-[44px] flex-col items-center justify-center gap-1 px-2 py-2 font-sans text-[16.8px] uppercase text-gray transition-colors hover:text-signal sm:flex-row sm:gap-4 sm:text-[19.2px] tracking-label"
                 >
-                  <span className="font-display text-xl tracking-normal">{s.date}</span>
+                  <span className="font-display text-2xl tracking-normal">
+                    {s.date}
+                    {s.time && (
+                      <span className="text-grayDim group-hover:text-signal">
+                        {" "}
+                        | {s.time}
+                      </span>
+                    )}
+                  </span>
                   <span aria-hidden className="hidden text-grayDim group-hover:text-signal sm:inline">
                     {DASH}
                   </span>

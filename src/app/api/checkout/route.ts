@@ -14,7 +14,9 @@ import { reserve, stockEnabled } from "@/lib/stock";
 
 export const runtime = "nodejs";
 
-const secretKey = process.env.STRIPE_SECRET_KEY;
+import { config } from "@/lib/config";
+
+const secretKey = config.stripe.secretKey;
 
 // How long a buyer may hold a shirt before it goes back on sale.
 const HOLD_MINUTES = 30;

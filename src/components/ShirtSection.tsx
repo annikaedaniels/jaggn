@@ -38,9 +38,9 @@ export function ShirtSection() {
   return (
     <section id="shirts" className="px-5 py-20 sm:py-28">
       <div className="mx-auto max-w-6xl">
-        <p className="eyebrow mb-8 text-center sm:mb-10">Shirts</p>
+        <p className="eyebrow mb-8 text-center text-[13.2px] sm:mb-10">Shirts</p>
 
-        <div className="mx-auto grid max-w-4xl items-center gap-10 md:grid-cols-2">
+        <div className="mx-auto grid max-w-[67.2rem] items-center gap-10 md:grid-cols-2">
           {/* ── Product views ───────────────────────────────── */}
           <div>
             <div className="relative border border-gray/25 p-2">
@@ -64,7 +64,7 @@ export function ShirtSection() {
               </div>
 
               {soldOut && (
-                <span className="tracking-nav absolute left-4 top-4 border border-signal bg-ink/90 px-3 py-1 font-sans text-[10px] uppercase text-signal">
+                <span className="tracking-nav absolute left-4 top-4 border border-signal bg-ink/90 px-3 py-1 font-sans text-[12px] uppercase text-signal">
                   Sold out
                 </span>
               )}
@@ -77,7 +77,7 @@ export function ShirtSection() {
                   key={img.label}
                   onClick={() => setView(i)}
                   aria-pressed={i === view}
-                  className={`tap tracking-nav border px-4 font-sans text-[10px] uppercase transition-colors ${
+                  className={`tap tracking-nav border px-4 font-sans text-[12px] uppercase transition-colors ${
                     i === view
                       ? "border-signal text-signal"
                       : "border-gray/25 text-grayDim hover:border-signal hover:text-signal"
@@ -91,36 +91,36 @@ export function ShirtSection() {
 
           {/* ── Details + buy ───────────────────────────────── */}
           <div className="text-center md:text-left">
-            <h2 className="text-4xl text-gray sm:text-5xl">{shirt.name}</h2>
+            <h2 className="text-[43px] text-gray sm:text-[58px]">{shirt.name}</h2>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3 md:justify-start">
-              <span className="font-display text-3xl text-signal">
+              <span className="font-display text-4xl text-signal">
                 {shirt.displayPrice}
               </span>
-              <span className="tracking-nav border border-signal/50 px-2 py-1 font-sans text-[10px] uppercase text-signal">
+              <span className="tracking-nav border border-signal/50 px-2 py-1 font-sans text-[12px] uppercase text-signal">
                 Free shipping
               </span>
               {lowStock && (
-                <span className="tracking-nav border border-gray/40 px-2 py-1 font-sans text-[10px] uppercase text-gray">
+                <span className="tracking-nav border border-gray/40 px-2 py-1 font-sans text-[12px] uppercase text-gray">
                   Only {left} left
                 </span>
               )}
             </div>
 
-            <p className="mt-4 max-w-sm font-sans text-sm text-grayDim md:mx-0">
+            <p className="mt-4 max-w-sm font-sans text-[16.8px] text-grayDim md:mx-0">
               {shirt.blurb}
             </p>
 
             <button
               onClick={() => setOpen(true)}
               disabled={soldOut}
-              className="btn btn-solid mt-8 w-full disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-12"
+              className="btn btn-solid mt-8 w-full text-[14.4px] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-12"
             >
               {soldOut ? "Sold out" : "Buy now"}
             </button>
 
             {soldOut && (
-              <p className="mt-4 font-sans text-xs text-grayDim">
+              <p className="mt-4 font-sans text-[14.4px] text-grayDim">
                 Join the list below — restocks go out there first.
               </p>
             )}

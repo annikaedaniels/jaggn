@@ -4,7 +4,9 @@ import { NextResponse } from "next/server";
 // GET /api/checkout-status?session_id=... → { status, email }
 // Used when Stripe returns the buyer to the site after payment.
 
-const secretKey = process.env.STRIPE_SECRET_KEY;
+import { config } from "@/lib/config";
+
+const secretKey = config.stripe.secretKey;
 
 export async function GET(request: Request) {
   if (!secretKey) {

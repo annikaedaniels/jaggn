@@ -15,17 +15,15 @@ import { site } from "@/data/site";
 //    1750–2050 fade the overlay away
 //
 //  Click / any key skips. Reduced-motion skips entirely.
-//  Plays once per browser session (sessionStorage) so it's a moment,
-//  not a toll booth. Set REPLAY_EVERY_LOAD = true to always play.
+//  Plays on every full page load (including reloads) — the root layout
+//  only remounts on an actual navigation/reload, not on client-side
+//  route changes, so this never replays mid-session by itself.
 // ─────────────────────────────────────────────────────────────
 
 const SNOW_END = 650;
 const BARS_END = 1250;
 const LOCK_END = 1750;
 const FADE_MS = 300;
-
-const SESSION_KEY = "jaggn_booted";
-const REPLAY_EVERY_LOAD = false;
 
 const FLASHES = [PALETTE.signal, PALETTE.ink, PALETTE.gray] as const;
 
@@ -50,13 +48,7 @@ export function BootSequence() {
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setIsTouch(window.matchMedia("(hover: none), (pointer: coarse)").matches);
-    let seen = false;
-    try {
-      seen = !REPLAY_EVERY_LOAD && sessionStorage.getItem(SESSION_KEY) === "1";
-    } catch {
-      /* private mode — just play it */
-    }
-    if (reduce || seen) return;
+    if (reduce) return;
     setActive(true);
   }, []);
 
@@ -74,14 +66,9 @@ export function BootSequence() {
     };
   }, [active, done]);
 
-  // ── Once finished: mark the session, fade out, unmount ────────
+  // ── Once finished: fade out, unmount ───────────────────────────
   useEffect(() => {
     if (!done) return;
-    try {
-      sessionStorage.setItem(SESSION_KEY, "1");
-    } catch {
-      /* private mode */
-    }
     const t = setTimeout(() => setHidden(true), FADE_MS);
     return () => clearTimeout(t);
   }, [done]);

@@ -10,10 +10,11 @@ import { StaticLoader } from "@/components/StaticLoader";
 import { StaticField } from "@/components/StaticField";
 import { useToast } from "@/components/Toast";
 import { useScrollLock } from "@/lib/useScrollLock";
+import { config } from "@/lib/config";
 
 // Publishable key is safe to expose (that's its purpose). Add it to
 // .env.local as NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (starts with pk_live_...).
-const pk = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const pk = config.stripe.publishableKey;
 const stripePromise = pk ? loadStripe(pk) : null;
 
 export function CheckoutModal({
@@ -111,7 +112,14 @@ export function CheckoutModal({
       aria-modal="true"
       aria-label="Checkout"
     >
-      <StaticField className="!fixed" opacity={0.12} fps={14} tint={0.03} />
+      {/* Live snow over the scrim. The page-wide .tv-static sits at z-40 and
+          this overlay is z-70 — so without its own field, clicking Buy Now
+          drops a flat black sheet over the site's grain and the broadcast
+          look just stops. `!fixed` because this backdrop scrolls: an absolute
+          layer would stretch to the whole scroll height instead of the
+          viewport. */}
+      <StaticField className="!fixed" opacity={0.12} fps={14} tint={0.03} churn={0.3} />
+
       {/* Edge-to-edge sheet on phones (every px counts in a payment form);
           a floating panel from sm up. */}
       <div
